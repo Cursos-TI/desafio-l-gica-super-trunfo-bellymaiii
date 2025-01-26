@@ -42,7 +42,7 @@ if(cidade->populacao > 0){
 else{
     cidade->PIB_percapita=0;
 }
-CalcularSuper_Poder(cidade);
+calcularSuper_poder(cidade);
 
 }
 
@@ -57,7 +57,7 @@ scanf("%d",&cidade->populacao);
 printf("digite a area:");
 scanf("%f", &cidade->area);
 
-print("digite o PIB:");
+printf("digite o PIB:");
 scanf("%f", &cidade->PIB);
 
 printf("digite o numero de pontos turisticos:");
@@ -76,7 +76,7 @@ if(cidade->populacao > 0){
 else{
     cidade->PIB_percapita= 0;
 }
-CalcularSuper_poder(cidade);
+calcularSuper_poder(cidade);
 }
 
 void exibirCidade(const cidade* cidade){
@@ -85,7 +85,7 @@ printf("\n --- dados da cidade --- \n", cidade->codigo);
 printf("populacao: %d\n", cidade->populacao);
 printf("area: %.2f\n",cidade->area);
 printf("PIB: %.2f\n", cidade->PIB);
-print("pontos turisticos: %d\n", cidade->pontos_Turisticos);
+printf("pontos turisticos: %d\n", cidade->pontos_Turisticos);
 printf("densidade populacional: %.2f\n", cidade->densidade_populacional);
 printf("PIB per capita: %.2f\n", cidade->PIB_percapita);
 printf("super poder: %.2f\n", cidade->super_poder);
