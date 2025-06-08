@@ -1,199 +1,273 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 
 typedef struct{
-
-char codigo[4];
+char estado;
+char nome [50];
+char codigo[5];
 int populacao;
 float area;
 float PIB;
 int pontos_Turisticos;
-float densidade_populacional;
-float PIB_percapita;
-float super_poder;
+float densidade_Populacional;
+float PIB_Percapita;
+float super_Poder;
+
 } cidade;
 
-void calcularSuper_poder(cidade* cidade){
-cidade->super_poder=cidade->populacao + cidade->area + cidade->PIB + cidade->pontos_Turisticos + cidade->densidade_populacional + cidade->PIB_percapita;
-}
+static void limparBufferDeEntrada();
+static int obterInteiroPositivo(const char* mensagem);
+static float obterFloatPositivo(const char* mensagem);
+static unsigned long int obterUlongPositivo(const char* mensagem);
+static void limparTela();
 
-void preencherCidade(cidade* cidade, char estado, int numero_cidade, int populacao, float area, float PIB, int pontos_Turisticos){
-
-snprintf(cidade->codigo, sizeof(cidade-> codigo), "%c%02d", estado, numero_cidade);
-
-cidade->populacao= populacao;
-cidade->area= area;
-cidade->PIB= PIB;
-cidade->pontos_Turisticos= pontos_Turisticos;
-
-if(cidade->area > 0){
-   cidade->densidade_populacional=cidade->populacao / cidade->area;
-}
-
-else{
-    cidade->densidade_populacional=0;
-}
-
-if(cidade->populacao > 0){
-    cidade->PIB_percapita= cidade->PIB / cidade->populacao;
-}
-
-else{
-    cidade->PIB_percapita=0;
-}
-calcularSuper_poder(cidade);
-
-}
-
-void cadastrarCidade(cidade* cidade){
-
-printf("digite o codigo da cidade:");
-scanf("%s", &cidade->codigo);
-
-printf("digite a populacao:");
-scanf("%d",&cidade->populacao);
-
-printf("digite a area:");
-scanf("%f", &cidade->area);
-
-printf("digite o PIB:");
-scanf("%f", &cidade->PIB);
-
-printf("digite o numero de pontos turisticos:");
-scanf("%d", &cidade->pontos_Turisticos);
-
-
-if(cidade->area > 0){
-   cidade->densidade_populacional=cidade->populacao / cidade->area;  
-}
-else{
-    cidade->densidade_populacional= 0;
-}
-if(cidade->populacao > 0){
-    cidade->PIB_percapita= cidade->PIB / cidade->populacao;
-}
-else{
-    cidade->PIB_percapita= 0;
-}
-calcularSuper_poder(cidade);
-}
-
-void exibirCidade(const cidade* cidade){
-
-printf("\n --- dados da cidade --- \n", cidade->codigo);
-printf("populacao: %d\n", cidade->populacao);
-printf("area: %.2f\n",cidade->area);
-printf("PIB: %.2f\n", cidade->PIB);
-printf("pontos turisticos: %d\n", cidade->pontos_Turisticos);
-printf("densidade populacional: %.2f\n", cidade->densidade_populacional);
-printf("PIB per capita: %.2f\n", cidade->PIB_percapita);
-printf("super poder: %.2f\n", cidade->super_poder);
-}
-
-void compararCidades(const cidade* c1, const cidade* c2) {
-
-    printf("\n=== comparacao entre %s e %s ===\n", c1->codigo, c2->codigo);
-
-    if(c1->densidade_populacional< c2->densidade_populacional){
-        printf("densidade populacional: %s vence\n", c1->codigo);
+void calcularAtributosDerivados(cidade* c){
+    if (c->area >0.0f){
+        c->densidade_Populacional = (float)c->populacao / c->area;
+    } else {
+        c->densidade_Populacional = 0.0f;
+    }
+    if (c->populacao > 0){
+        c->PIB_Percapita = (c->PIB* 1000000000.0f) / (float)c->populacao;
+    } else {
+        c->PIB_Percapita = 0.0f;
     }
 
-    else if(c1->densidade_populacional > c2->densidade_populacional){
-        printf("densidade populacional: %s vence\n", c2->codigo);
+    c->super_Poder = ((float)c->populacao / 1000000000.0f) +
+                      (c->area / 10.0f) +
+                      (c->PIB * 100.0f) +
+                      ((float)c->pontos_Turisticos * 50.0f);
+    if (c->densidade_Populacional > 0.0f){
+        c->super_Poder += (1.0f / c->densidade_Populacional) * 100.0f;
     }
-    else{ 
-        printf("densidade populacional: empate /n");
-    }
+    c->super_Poder += (c->PIB_Percapita / 1000.0f);
+}
+
+void preencherCidade (cidade* c, char estado_char, int numero_cidade, int populacao, float area, float PIB, int pontos_Turisticos, const char* nome_cidade){
+    c->estado = toupper (estado_char);
+    snprintf (c->codigo, 5, "%c%02d", c->estado, numero_cidade);
+    strcpy(c->nome, nome_cidade);
+
+    c->populacao = populacao;
+    c->area = area;
+    c->PIB = PIB;
+    c->pontos_Turisticos = pontos_Turisticos;
+
+    calcularAtributosDerivados(c);
+}
+
+void cadastrarCidade(cidade* c){
+    printf("\n--- cadastro manual de cidade ---\n");
+
+    printf("digite o estado (uma letra de A a Z):");
+    scanf("%c", &c->estado);
     
-    if(c1->PIB_percapita > c2->PIB_percapita){
-        printf("PIB per capita: %s vence\n", c1->codigo);
-    }
-    else if(c1->PIB_percapita < c2->PIB_percapita){
-        printf("PIB per capita: %s vence\n", c2->codigo);
-    }
-    else{
-        printf("PIB per capita: empate\n");
-    }
+    c->estado = toupper (c->estado);
+    LimparBufferDeEntrada();
 
-    if(c1->super_poder > c2->super_poder){
-        printf("super poder: %s vence\n", c1->codigo);  
+    printf("digite o codigo da cidade(ex: B01):");
+    fgets(c->codigo, 5, stdin);
+    c->codigo[strcspn(c->nome, "\n")] = '\0';
+
+    c->populacao = obterUlongPositivo ("digite a populacao:");
+    c->area = obterFloatPositivo ("digite a area (em km2):");
+    c->PIB = obterFloatPositivo ("digite o PIB (em bilhoes de reais):");
+    c->pontos_Turisticos = obterInteiroPositivo ("digite o numero de pontos turisticos:");
+
+    calcularAtributosDerivados(c);
+    printf("\n cidade %s cadastrada com sucesso! \n", c->nome);
+}
+
+void compararCidades(const cidade* c1, const cidade* c2){
+    
+    printf("\n=== dados da cidade ===\n %s", c->codigo);
+    printf("nome: %s \n", c->nome);
+    printf("estado: %c \n", c->estado);
+    printf("populacao: %lu habitantes \n", c->populacao);
+    printf("area: %.2f km2 \n", c->area);
+    printf("PIB: %.2f bilhoes \n", c->PIB);
+    printf("pontos turisticos: %d \n", c->pontos_Turisticos);
+    printf("densidade populacional: %.2f hab/km2 \n", c->densidade_Populacional);
+    printf("PIB Percapita: %.2f \n", c->PIB_Percapita);
+    printf("super poder: %.2f \n", c->super_Poder);
+    printf("==============================\n");
+}
+
+void compararCidades(const cidade* c1, const cidade* c2){
+    
+    prinft("\n=== comparacao entre %s (%s) e %s (%s) ===\n", c1->codigo, c1->nome, c2->codigo, c2->nome);
+    printf("%s (%s): %.2f hab/km2", c1->codigo, c1->nome, c1->densidade_Populacional);
+    printf("%s (%s): %.2f hab/km2", c2->codigo, c2->nome, c2->densidade_Populacional);
+    if (c1->densidade_Populacional < c2->densidade_Populacional){
+        printf("resultado: %s (%s) vence! \n", c1->codigo, c1->nome);
+    } else if (c1->densidade_Populacional > c2->densidade_Populacional){
+        printf("resultado: %s (%s) vence! \n", c2->codigo, c2->nome);
+    } else {
+        printf("resultado: empate! \n");
     }
-    else if(c1->super_poder < c2->super_poder){
-        printf("super poder: %s vence\n", c2->codigo);
+    printf("==============================\n");
+
+    printf("PIB Percapita(maior vence): \n");
+    printf("%s (%s): R$ %.2f \n", c1->codigo, c1->nome, c1->PIB_Percapita);
+    printf("%s (%s): R$ %.2f \n", c2->codigo, c2->nome, c2->PIB_Percapita);
+    if (c1->PIB_Percapita > c2->PIB_Percapita){
+        printf("resultado: %s (%s) vence! \n", c1->codigo, c1->nome);
+    } else if (c1->PIB_Percapita <c2->PIB_Percapita){
+        printf("resultado: %s (%s) vence! \n", c2->codigo, c2->nome);
+    } else {
+        printf("resultado: empate! \n");
     }
-    else{
-        printf("super poder: empate\n");
+    printf("==============================\n");
+
+    printf("super poder(maior vence): \n");
+    printf("%s (%s): %.2f pontos \n", c1->codigo, c1->nome, c1->super_Poder);
+    printf("%s (%s): %.2f pontos \n", c2->codigo, c2->nome, c2->super_Poder);
+    if (c1->super_Poder > c2->super_Poder){
+        printf("resultado: %s (%s) vence! \n", c1->codigo, c1->nome);
+    } else if (c1->super_Poder < c2->super_Poder){
+        printf("resultado: %S (%s) vence! \n", c2->codigo, c2->nome);
+    } else {
+        printf("resultado: empate! \n");
     }
+    printf("==============================\n");
+}
+
+static void LimparBufferDeEntrada(){
+    int c;
+    while ((c= getchar())!= '\n' && c != EOF);
+}
+
+static void LimparTela(){
+    #ifdef _WIN32
+        system ("cls");
+    #else
+        system ("clear");
+    #endif
+}
+
+static int obterInteiroPositivo(const char* mensagem){
+    int valor;
+    int leitura_ok;
+    do{
+        printf("%s", mensagem);
+        leitura_ok = scanf("%d", &valor);
+        if (leitura_ok != 1 || valor < 0){
+            printf("erro: entrada invalida. Digite um numero inteiro nao negativo. Tente novamente. \n");
+            LimparBufferDeEntrada();
+        }
+    } while (leitura_ok != 1 || valor < 0);
+    LimparBufferDeEntrada();
+    return valor;
+}
+
+static float obterFloatPositivo(const char* mensagem){
+    float valor;
+    int leitura_ok;
+    do{
+        printf("%s", mensagem);
+        leitura_ok = scanf("%f", &valor);
+        if (leitura_ok != 1 || valor < 0.0f){
+            printf("erro: valor invalido. Insira um numero decimal positivo ou zero. Tente novamente. \n");
+            limparBufferDeEntrada();
+        }
+    } while (leitura_ok != 1 || valor <0.0f);
+    limparBufferDeEntrada();
+    return valor;
+}
+
+static unsigned long int obterUlongPositivo(const char* mensagem){
+    unsigned long int valor;
+    int leitura_ok;
+    do{
+        printf("%s", mensagem);
+        leitura_ok = scanf("%lu", &valor);
+        if (leitura_ok != 1){
+            printf("erro: entrada invalida. Digite um numero inteiro grande. Tente novamente. \n");
+            limparBufferDeEntrada();
+        }
+    } while (leitura_ok != 1);
+    limparBufferDeEntrada();
+    return valor;
 }
 
 int main(){
-    int totalEstados=8;
-    int cidadesPorEstado=4;
-    int totalCidades= totalEstados* cidadesPorEstado;
+    const int totalEstados = 8;
+    const int cidadesPorEstado = 4;
+    const int totalCidades = totalEstados * cidadesPorEstado;
+    const int numCartasPadrao = 2;
 
-    cidade* cidades=(cidade*)malloc(totalCidades* sizeof(cidade));
-    if(cidades==NULL){
-        printf("erro ao alocar memoria!"\n);
+    cidade* cidades = (cidade*)malloc(totalCidades * sizeof (cidade));
+    if (cidades == NULL){
+        printf("erro ao alocar memoria! \n");
         return 1;
     }
-    printf("escolha o metodo de cadastro:\n");
-    printf("1-cadastro manual\n");
-    printf("2-cadastro automatico\n");
-    int escolha;
-    scanf("%d", &escolha);
 
-    if(escolha==1){
-        for(int i= 0; i < totalCidades; i++){
+    LimparTela();
+    printf("=== Super Trunfo de Cidades ===\n");
+    printf("escolha o metodo de cadastro: \n");
+    printf("1- cadastro manual \n");
+    printf("2- cadastro automatico \n");
+    int escolha = obterInteiroPositivo ("sua escolha:");
+
+    if (escolha == 1){
+        for (int i = 0; 1 < totalCidades; i++){
             cadastrarCidade(&cidades[i]);
+            printf("pressione ENTER para continuar para a proxima cidade...\n");
+            limparBufferDeEntrada();
         }
-    } else{
+    } else {
         printf("\n=== cadastro automatico de cidades ===\n");
-        int populacoes[]={100000, 200000, 150000,180000, 120000, 300000, 250000,220000};
-        float areas[]={50.5,120.7,80.3, 95.6, 60.8, 150.2, 130.4, 110.9};
-        float PIBS[]={5000, 8000, 6000, 7500,5500, 9000, 8500, 7000};
-        int pontosTuristicos[]={5, 8 , 7, 6 , 4, 10, 9 , 8};
-    
-    for(char estado='a'; estado <'a' +totalEstados; estado++){
-        for(int i = 1; i <= cidadesPorEstado; i++){
-            int index= (estado - 'a')* cidadesPorEstado +(i- 1);
-            int dataIndex= (i - 1) % 8;
-            preencherCidade(&cidades[index], estado, i, populacoes[dataIndex], areas[dataIndex], PIBS[dataIndex], pontosTuristicos[dataIndex]);
+        int populacoes[]={1333000, 347657, 224112, 78181, 265074, 325685, 227646, 463501};
+        float areas[]={496.8f, 131.1f, 1.497f, 276.7f, 468.2f, 1.610f, 223.6f, 1.652f};
+        float PIBS[]={81560.0f, 18466.0f, 3743.0f, 3749.0f, 10983.0f, 108000.0f, 10000.0f, 60506.0f};
+        int pontosTuristicos[]={8, 5, 14, 8, 10, 7, 8, 8};
+        const char* nomesCidades[]={"Porto Alegre", "Canoas", "Viamao", "Esteio", "Gravatai", "Pelotas", "Novo Hamburgo", "Caxias do Sul"};
 
+        int nome_idx = 0;
+        for (char estado = 'A'; estado < 'A' + totalEstados; estado++){
+            for(int i = 1; i <= cidadesPorEstado; i++){
+                int index = (estado - 'A') * cidadesPorEstado + (i - 1);
+                int dataIndex = (i - 1) % 8; 
+                preencherCidade(&cidades[index], estado, 1, populacoes[dataIndex], areas[dataIndex],PIBS[dataIndex],pontosTuristicos[dataIndex], nomesCidades[nome_idx %8]);
+                nome_idx++;
+            }
         }
+        printf("\n todas as cidades foram preenchidas automaticamente! \n");
     }
+    printf("\n pressione ENTER para exibir as cidades cadastradas...\n");
+    limparBufferDeEntrada();
+    limparTela();
 
-
-
-    }
-
-    printf("\n=== dadoscadastrados ===\n");
+    printf("\n=== dados cadastrados===\n");
     for(int i = 0; i < totalCidades; i++){
-        exibirCidade(&cidades[i]);
+        exibirCidade(]&cidades[i]);
     }
+
+    printf("\n pressione ENTER para iniciar a comparacao de cidade...\n");
+    limparBufferDeEntrada();
+    limparTela();
 
     printf("\n=== comparar cidades ===\n");
+    printf("existem %d cidades cadastradas (indices de 0 a %d).\n", totalCidades,totalCidades - 1);
     int c1Index, c2Index;
-    printf("digite o indice da primeira cidade:", totalCidades - 1);
-    scanf("%d", &c1Index);
 
-    printf("digite o indice da segunda cidade:", totalCidades - 1);
-    scanf("%d", &c2Index);
+    c1Index = obterInteiroPositivo("digite o indice da primeira cidade para comparar:");
+    c2Index = obterInteiroPositivo("digite o indice da segunda cidade para comparar:");
 
-    if(c1Index >= 0 && c1Index < totalCidades && c2Index >= 0 && c2Index < totalCidades){
+    if (c1Index >= 0 && c1Index < totalCidades && c2Index >= 0 && c2Index < totalCidades){
         compararCidades(&cidades[c1Index], &cidades[c2Index]);
+    } else {
+        printf("indices invalidos! por favor, digite indices dentro do intervalo permitido.\n");
     }
-    else{
-        printf("indices invalidos!\n");  
-    }
+
     free(cidades);
 
-    return 0;
+    printf("\n programa finalizado. Pressione ENTER para sair. \n");
+    limparBufferDeEntrada();
 
+    return 0;
 }
 
 
-
-
-
-    
