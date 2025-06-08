@@ -17,11 +17,11 @@ float super_Poder;
 
 } cidade;
 
-static void limparBufferDeEntrada();
+static void LimparBufferDeEntrada();
 static int obterInteiroPositivo(const char* mensagem);
 static float obterFloatPositivo(const char* mensagem);
 static unsigned long int obterUlongPositivo(const char* mensagem);
-static void limparTela();
+static void LimparTela();
 
 void calcularAtributosDerivados(cidade* c){
     if (c->area >0.0f){
@@ -80,7 +80,7 @@ void cadastrarCidade(cidade* c){
     printf("\n cidade %s cadastrada com sucesso! \n", c->nome);
 }
 
-void compararCidades(const cidade* c1, const cidade* c2){
+void exibirCidade(const cidade* c1, const cidade* c2){
     
     printf("\n=== dados da cidade ===\n %s", c->codigo);
     printf("nome: %s \n", c->nome);
@@ -95,9 +95,9 @@ void compararCidades(const cidade* c1, const cidade* c2){
     printf("==============================\n");
 }
 
-void compararCidades(const cidade* c1, const cidade* c2){
+void exibirCidade(const cidade* c1, const cidade* c2){
     
-    prinft("\n=== comparacao entre %s (%s) e %s (%s) ===\n", c1->codigo, c1->nome, c2->codigo, c2->nome);
+    printf("\n=== comparacao entre %s (%s) e %s (%s) ===\n", c1->codigo, c1->nome, c2->codigo, c2->nome);
     printf("%s (%s): %.2f hab/km2", c1->codigo, c1->nome, c1->densidade_Populacional);
     printf("%s (%s): %.2f hab/km2", c2->codigo, c2->nome, c2->densidade_Populacional);
     if (c1->densidade_Populacional < c2->densidade_Populacional){
@@ -127,7 +127,7 @@ void compararCidades(const cidade* c1, const cidade* c2){
     if (c1->super_Poder > c2->super_Poder){
         printf("resultado: %s (%s) vence! \n", c1->codigo, c1->nome);
     } else if (c1->super_Poder < c2->super_Poder){
-        printf("resultado: %S (%s) vence! \n", c2->codigo, c2->nome);
+        printf("resultado: %s (%s) vence! \n", c2->codigo, c2->nome);
     } else {
         printf("resultado: empate! \n");
     }
@@ -170,10 +170,10 @@ static float obterFloatPositivo(const char* mensagem){
         leitura_ok = scanf("%f", &valor);
         if (leitura_ok != 1 || valor < 0.0f){
             printf("erro: valor invalido. Insira um numero decimal positivo ou zero. Tente novamente. \n");
-            limparBufferDeEntrada();
+            LimparBufferDeEntrada();
         }
     } while (leitura_ok != 1 || valor <0.0f);
-    limparBufferDeEntrada();
+    LimparBufferDeEntrada();
     return valor;
 }
 
@@ -185,10 +185,10 @@ static unsigned long int obterUlongPositivo(const char* mensagem){
         leitura_ok = scanf("%lu", &valor);
         if (leitura_ok != 1){
             printf("erro: entrada invalida. Digite um numero inteiro grande. Tente novamente. \n");
-            limparBufferDeEntrada();
+            LimparBufferDeEntrada();
         }
     } while (leitura_ok != 1);
-    limparBufferDeEntrada();
+    LimparBufferDeEntrada();
     return valor;
 }
 
@@ -215,7 +215,7 @@ int main(){
         for (int i = 0; 1 < totalCidades; i++){
             cadastrarCidade(&cidades[i]);
             printf("pressione ENTER para continuar para a proxima cidade...\n");
-            limparBufferDeEntrada();
+            LimparBufferDeEntrada();
         }
     } else {
         printf("\n=== cadastro automatico de cidades ===\n");
@@ -237,17 +237,17 @@ int main(){
         printf("\n todas as cidades foram preenchidas automaticamente! \n");
     }
     printf("\n pressione ENTER para exibir as cidades cadastradas...\n");
-    limparBufferDeEntrada();
-    limparTela();
+    LimparBufferDeEntrada();
+    LimparTela();
 
     printf("\n=== dados cadastrados===\n");
     for(int i = 0; i < totalCidades; i++){
-        exibirCidade(]&cidades[i]);
+        exibirCidade(&cidades[i]);
     }
 
     printf("\n pressione ENTER para iniciar a comparacao de cidade...\n");
-    limparBufferDeEntrada();
-    limparTela();
+    LimparBufferDeEntrada();
+    LimparTela();
 
     printf("\n=== comparar cidades ===\n");
     printf("existem %d cidades cadastradas (indices de 0 a %d).\n", totalCidades,totalCidades - 1);
@@ -257,7 +257,7 @@ int main(){
     c2Index = obterInteiroPositivo("digite o indice da segunda cidade para comparar:");
 
     if (c1Index >= 0 && c1Index < totalCidades && c2Index >= 0 && c2Index < totalCidades){
-        compararCidades(&cidades[c1Index], &cidades[c2Index]);
+        cadastrarCiade(&cidades[c1Index], &cidades[c2Index]);
     } else {
         printf("indices invalidos! por favor, digite indices dentro do intervalo permitido.\n");
     }
@@ -265,7 +265,7 @@ int main(){
     free(cidades);
 
     printf("\n programa finalizado. Pressione ENTER para sair. \n");
-    limparBufferDeEntrada();
+    LimparBufferDeEntrada();
 
     return 0;
 }
